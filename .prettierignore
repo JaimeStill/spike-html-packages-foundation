@@ -1,0 +1,17 @@
+# Prettier formats the code, the JSON, and the stylesheets only: its default run would also
+# rewrite the Markdown, the YAML, and pnpm-lock.yaml. Every file is ignored, then every directory
+# and the code, JSON, and CSS files are let back in. Prettier also skips what .gitignore lists.
+# (After spike-html-conventions a88828a: .prettierignore.)
+*
+!*/
+!*.js
+!*.ts
+!*.json
+!*.css
+# spike-html-design v0.7.0's own sheets, copied unchanged below a provenance line as the browser
+# tier's reference: they keep upstream's formatting, which is Biome's, not this repository's.
+test/fixtures/v0.7.0/
+# marathon working files.
+.claude/plans/
+.claude/briefs/
+node_modules

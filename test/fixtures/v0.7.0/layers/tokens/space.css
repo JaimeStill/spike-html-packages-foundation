@@ -1,0 +1,62 @@
+/* from spike-html-design v0.7.0 (fe75220): layers/tokens/space.css, unchanged below this line: the browser tier's reference */
+/*
+ * layers/tokens/space.css, the space facet of the tokens layer: its contract, and what derives
+ * from a profile's values.
+ *
+ * Three kinds of token: a fluid spacing scale, two line widths, and the radii.
+ *
+ * The spacing scale is nine steps, --space-3xs to --space-3xl, each a fixed multiple of one
+ * base, --space-base. The base is fluid: it grows from its smallest value on a 22.5rem display
+ * to its largest on an 80rem one, and holds those values outside the range. The display size is
+ * min(100vi, 100svb * 16 / 9), the inline size capped by the width a 16:9 window of the same
+ * height would have, so a short, wide window counts as smaller than its width. The bounds are
+ * rem, never px, so the scale follows the user's font size and browser zoom.
+ *
+ * --space-fluid is internal: the fluid expansion, 0 to 1, of the display through that range. It
+ * drives the base, and pages never read it. --space-base is public: a consumer may set it to
+ * rescale every step.
+ *
+ * The line widths, --line-s and --line-m, are for borders and outlines and stay in px: a
+ * hairline should not grow with the display. The radii derive from one base, so changing
+ * --radius-base rescales every radius but --radius-full.
+ *
+ * A profile is one density's values for the four tokens the rest derive from: --space-base,
+ * --line-s, --line-m, and --radius-base. It is its own file under layers/tokens/space/, applied
+ * by data-space on any element to its subtree as a color profile is by data-palette (see
+ * layers/tokens/color.css); regular is the default. A custom property inherits with its var()
+ * already substituted, so the steps and derived radii are declared again on every data-space
+ * scope, where they read the scope's own base. A scope changes no paint and no text.
+ *
+ * The facet reads only its own tokens, never the type facet's, so swapping a space profile
+ * changes the space tokens and nothing else.
+ *
+ * Both entries import this file into spike-html-design.tokens.space, then the profiles: the
+ * lean entry regular's, the full entry every profile's. Pages link an entry, never this file.
+ */
+
+:where(:root) {
+  /* Internal. The fluid expansion: 0 on a 22.5rem display or narrower, 1 on an 80rem display or
+     wider. The type facet keeps its own copy, so the facets stay independent. */
+  /* biome-ignore lint/correctness/noUnknownFunction: biome does not know progress(), which chromium ships. */
+  --space-fluid: progress(min(100vi, 100svb * 16 / 9), 22.5rem, 80rem);
+
+  --radius-full: 9999px;
+}
+
+/* Every step is a multiple of the base, and every radius but full a fraction of the radius base,
+   resolved on each scope against the base its profile set there. */
+:where(:root, [data-space]) {
+  --space-3xs: calc(var(--space-base) * 0.25);
+  --space-2xs: calc(var(--space-base) * 0.5);
+  --space-xs: calc(var(--space-base) * 0.75);
+  --space-s: var(--space-base);
+  --space-m: calc(var(--space-base) * 1.5);
+  --space-l: calc(var(--space-base) * 2);
+  --space-xl: calc(var(--space-base) * 3);
+  --space-2xl: calc(var(--space-base) * 4);
+  --space-3xl: calc(var(--space-base) * 6);
+
+  --radius-sm: calc(var(--radius-base) * 2 / 3);
+  --radius-md: var(--radius-base);
+  --radius-lg: calc(var(--radius-base) * 4 / 3);
+}

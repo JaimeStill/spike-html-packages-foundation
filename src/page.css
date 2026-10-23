@@ -1,0 +1,14 @@
+/*
+ * The foundation's page entry: the one stylesheet a page links.
+ * From spike-html-packages (7fb31a8): packages/foundation/src/page.css.
+ */
+
+/* Comes first to fix the order. meta precedes structure and utilities so a .button that is also
+   .scroll-y or .field computes as in v0.7.0; a page's own later layer wins over the foundation. */
+
+@layer foundation.tokens.color, foundation.tokens.space, foundation.tokens.type, foundation.reset, foundation.elements, foundation.meta, foundation.structure, foundation.utilities;
+
+@import url(./baseline.css);
+@import url(./meta.css);
+@import url(./structure.css);
+@import url(./utilities.css);
