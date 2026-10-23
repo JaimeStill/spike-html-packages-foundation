@@ -43,8 +43,6 @@ The README lists the subpaths; the sources and their doc comments are authoritat
 
 ## Releases
 
-`release.yml` runs on every push to main and cuts `v<version>` from `package.json` when the
-remote has no such tag: the check, `pnpm pack`, a commit of the pack's `package/` whose one parent
-is the pushed commit and which no branch holds, an annotated tag on it pushed alone, the GitHub
-release from `CHANGELOG.md`, and the tarball attached. A version bump, with its changelog section,
-is what releases; a push that bumps nothing ends green.
+`release.yml` cuts `v<version>` on a push to main when `package.json`'s version has no tag on the
+remote; its header comment lists the steps. A version bump, with its changelog section, is what
+releases, and a push that bumps nothing ends green.
