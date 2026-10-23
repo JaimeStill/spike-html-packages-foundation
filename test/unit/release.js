@@ -1,10 +1,12 @@
-// A release's shape: its exports map walked by Node's rules, and a pack of the build checked
-// against the sources, package.json's files and exports, and the Apache 2.0 LICENSE its manifest
-// declares. test/unit/release.test.js runs it on a pnpm pack.
+// A release's shape: a pack of the build checked against the sources, package.json's files and
+// exports, which Node itself resolves, and the Apache 2.0 LICENSE its manifest declares.
+// test/unit/release.test.js runs it on a pnpm pack.
 // Adapted from spike-html-packages (7fb31a8): test/consumers/release.js, cut to one package.
 
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, sep } from "node:path";
+import { join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
 /** Every file below `dir`, relative to it with / separators, sorted. */
 export function listFiles(dir) {
@@ -15,79 +17,33 @@ export function listFiles(dir) {
     .sort();
 }
 
-/** The conditions of an exports entry, as { condition: target }; a bare target is "default", and
- * null, which excludes its subpath, has none. */
-export function conditions(entry) {
-  return typeof entry === "string" ? { default: entry } : { ...entry };
-}
-
 /** A key's or target's parts around its one *, or undefined when it holds none. */
 function star(pattern) {
   const at = pattern.indexOf("*");
   return at < 0 ? undefined : { prefix: pattern.slice(0, at), suffix: pattern.slice(at + 1) };
 }
 
-/** Node's PATTERN_KEY_COMPARE: the longer prefix before the * first, then the longer key. */
-function compareKeys(a, b) {
-  const [pa, pb] = [a.indexOf("*"), b.indexOf("*")];
-  return pb - pa || b.length - a.length;
-}
+// Node's condition sets: its defaults, and with types, the condition TypeScript adds.
+const conditionSets = [[], ["--conditions=types"]];
+// Each specifier in argv resolved as the package's own import, or null where Node refuses it.
+const resolveArgs = `console.log(JSON.stringify(process.argv.slice(1).map((specifier) => {
+  try { return import.meta.resolve(specifier); } catch { return null; }
+})));`;
 
-/** The key a subpath matches and its conditions, the * replaced, by Node's rules, or undefined. */
-export function resolveExport(exports, subpath) {
-  if (Object.hasOwn(exports, subpath) && !subpath.includes("*")) {
-    return { key: subpath, targets: conditions(exports[subpath]) };
+/** The paths, relative to root, that Node resolves each subpath of the package at root to under
+ * any condition set, by self-reference, as { subpath: Set }; none where Node refuses it. */
+function resolveSubpaths(root, name, subpaths) {
+  const specifiers = subpaths.map((subpath) => name + subpath.slice(1));
+  const resolved = Object.fromEntries(subpaths.map((subpath) => [subpath, new Set()]));
+  for (const conditions of conditionSets) {
+    const args = [...conditions, "--input-type=module", "-e", resolveArgs, ...specifiers];
+    const urls = JSON.parse(execFileSync(process.execPath, args, { cwd: root, encoding: "utf8" }));
+    urls.forEach((url, i) => {
+      if (url === null) return;
+      resolved[subpaths[i]].add(relative(root, fileURLToPath(url)).split(sep).join("/"));
+    });
   }
-  const [key] = Object.keys(exports)
-    .filter((candidate) => {
-      const parts = star(candidate);
-      return (
-        parts !== undefined &&
-        subpath.length >= candidate.length &&
-        subpath.startsWith(parts.prefix) &&
-        subpath.endsWith(parts.suffix)
-      );
-    })
-    .sort(compareKeys);
-  if (key === undefined) return undefined;
-  const parts = star(key);
-  const value = subpath.slice(parts.prefix.length, subpath.length - parts.suffix.length);
-  const targets = Object.entries(conditions(exports[key])).map(([condition, target]) => [
-    condition,
-    target.replace("*", value),
-  ]);
-  return { key, targets: Object.fromEntries(targets) };
-}
-
-/** Each { subpath, key, condition } resolving to the file, by a key that wins the subpath. */
-export function subpathsOf(exports, file) {
-  const path = `./${file}`;
-  const found = [];
-  for (const [key, entry] of Object.entries(exports)) {
-    for (const target of Object.values(conditions(entry))) {
-      if (typeof target !== "string") continue;
-      const parts = star(target);
-      let subpath;
-      if (parts === undefined) {
-        if (target === path) subpath = key;
-      } else if (
-        path.length >= parts.prefix.length + parts.suffix.length &&
-        path.startsWith(parts.prefix) &&
-        path.endsWith(parts.suffix)
-      ) {
-        subpath = key.replace(
-          "*",
-          path.slice(parts.prefix.length, path.length - parts.suffix.length),
-        );
-      }
-      if (subpath === undefined || found.some((f) => f.subpath === subpath)) continue;
-      const resolved = resolveExport(exports, subpath);
-      for (const [condition, resolvedPath] of Object.entries(resolved?.targets ?? {})) {
-        if (resolvedPath === path) found.push({ subpath, key: resolved.key, condition });
-      }
-    }
-  }
-  return found;
+  return resolved;
 }
 
 /** The dist/ paths a source in src/ ships as. */
@@ -165,40 +121,61 @@ export function releaseProblems(root, src) {
     if (!shipped(path)) problems.push(`${path} isn't under package.json's files`);
   }
 
-  // exports: every entry well formed or null, which excludes its subpath, every built file
-  // reachable, every pattern key reaching a built file, and every target a reachable subpath or an
-  // exact key resolves to built.
+  // exports: every entry a target or a flat object of condition targets, or null, which excludes
+  // its subpath; every built file reached through an export as Node resolves it; every pattern key
+  // reaching a built file; and every target Node resolves an export to built. The subpaths judged
+  // are the exact keys and each built file's subpath through a pattern target that matches it.
   const subpaths = new Set();
-  const used = new Set();
+  const origins = [];
   for (const [key, entry] of Object.entries(exports)) {
     if (entry === null) continue;
-    const targets = Object.values(conditions(entry));
+    const targets = typeof entry === "string" ? [entry] : Object.values(entry);
     if (targets.length === 0 || targets.some((target) => typeof target !== "string")) {
       problems.push(`exports["${key}"] isn't a target or a flat object of condition targets`);
-    } else if (!key.includes("*")) {
-      subpaths.add(key);
+      continue;
+    }
+    const keyParts = star(key);
+    if (keyParts === undefined) subpaths.add(key);
+    for (const target of targets) {
+      const parts = star(target);
+      for (const path of built) {
+        const file = `./${path}`;
+        let subpath;
+        if (parts === undefined) {
+          if (target === file && keyParts === undefined) subpath = key;
+        } else if (
+          keyParts !== undefined &&
+          file.length >= parts.prefix.length + parts.suffix.length &&
+          file.startsWith(parts.prefix) &&
+          file.endsWith(parts.suffix)
+        ) {
+          subpath = key.replace(
+            "*",
+            file.slice(parts.prefix.length, file.length - parts.suffix.length),
+          );
+        }
+        if (subpath === undefined) continue;
+        subpaths.add(subpath);
+        origins.push({ key, subpath, path });
+      }
     }
   }
+  const resolved = resolveSubpaths(root, manifest.name, [...subpaths]);
+  const reached = origins.filter(({ subpath, path }) => resolved[subpath].has(path));
   for (const path of built) {
-    const reached = subpathsOf(exports, path);
-    if (reached.length === 0) problems.push(`${path} is reachable through no export`);
-    for (const { subpath, key } of reached) {
-      subpaths.add(subpath);
-      used.add(key);
+    if (!reached.some((origin) => origin.path === path)) {
+      problems.push(`${path} is reachable through no export`);
     }
   }
   for (const key of Object.keys(exports)) {
-    if (key.includes("*") && !used.has(key))
+    if (key.includes("*") && !reached.some((origin) => origin.key === key)) {
       problems.push(`exports["${key}"] reaches no built file`);
+    }
   }
-  for (const subpath of subpaths) {
-    for (const [condition, target] of Object.entries(
-      resolveExport(exports, subpath)?.targets ?? {},
-    )) {
-      if (typeof target !== "string") continue;
-      const path = target.replace(/^\.\//, "");
+  for (const [subpath, paths] of Object.entries(resolved)) {
+    for (const path of paths) {
       if (!builtSet.has(path)) {
-        problems.push(`exports["${subpath}"] ${condition} points at ${target}, which isn't built`);
+        problems.push(`exports["${subpath}"] resolves to ./${path}, which isn't built`);
       }
     }
   }

@@ -86,11 +86,11 @@ describe("release pack", () => {
     "a pack without its README": [remove("README.md"), "the pack has no README.md"],
     "an export at a missing file": [
       (_, copy) => (copy.exports["./gone.css"] = "./dist/gone.css"),
-      'exports["./gone.css"] default points at ./dist/gone.css, which isn\'t built',
+      'exports["./gone.css"] resolves to ./dist/gone.css, which isn\'t built',
     ],
     "a pattern export whose other condition is missing": [
       (_, copy) => (copy.exports["./*.js"] = { types: "./dist/*.ts", default: "./dist/*.js" }),
-      'exports["./dom.js"] types points at ./dist/dom.ts, which isn\'t built',
+      'exports["./dom.js"] resolves to ./dist/dom.ts, which isn\'t built',
     ],
     "a built file no export reaches": [
       (_, copy) => delete copy.exports["./*.css"],
@@ -98,7 +98,7 @@ describe("release pack", () => {
     ],
     "the ambient declaration reached as a module": [
       (_, copy) => delete copy.exports["./css.js"],
-      'exports["./css.js"] default points at ./dist/css.js, which isn\'t built',
+      'exports["./css.js"] resolves to ./dist/css.js, which isn\'t built',
     ],
     "a pattern export that reaches nothing": [
       (_, copy) => (copy.exports["./apps/*.js"] = "./dist/apps/*.js"),
