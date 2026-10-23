@@ -1,0 +1,82 @@
+/*
+ * The foundation's meta sheet: buttons and their hue variants. Self-layered and importing nothing,
+ * so a shadow root adopts it alone.
+ * Adapted from spike-html-design v0.7.0 (fe75220): layers/tools.css.
+ */
+
+@layer foundation.meta {
+  .button {
+    display: inline-block;
+    padding: var(--space-3xs) var(--space-s);
+    border: var(--line-s) solid var(--border-2);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-2);
+    color: var(--fg);
+    font-family: var(--font-ui);
+    line-height: var(--leading-ui);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .button:hover:where(:not(:disabled)) {
+    border-color: var(--interaction-color, var(--blue));
+    background-color: var(--border);
+  }
+
+  .button:disabled {
+    background-color: var(--bg);
+    color: var(--fg-3);
+  }
+
+  /* --button-color is the public hook for a variant, set in a page's own later layer:
+     .button-danger { --button-color: var(--red); } */
+
+  .button-red {
+    --button-color: var(--red);
+  }
+
+  .button-orange {
+    --button-color: var(--orange);
+  }
+
+  .button-yellow {
+    --button-color: var(--yellow);
+  }
+
+  .button-green {
+    --button-color: var(--green);
+  }
+
+  .button-cyan {
+    --button-color: var(--cyan);
+  }
+
+  .button-blue {
+    --button-color: var(--blue);
+  }
+
+  .button-purple {
+    --button-color: var(--purple);
+  }
+
+  .button-magenta {
+    --button-color: var(--magenta);
+  }
+
+  :where(.button, button, input:is([type="button"], [type="submit"], [type="reset"])):is(
+      [class^="button-"],
+      [class*=" button-"]
+    ):not(:disabled) {
+    border-color: var(--button-color);
+    background-color: transparent;
+    color: var(--button-color);
+  }
+
+  :where(.button, button, input:is([type="button"], [type="submit"], [type="reset"])):is(
+      [class^="button-"],
+      [class*=" button-"]
+    ):not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--button-color) 15%, transparent);
+  }
+}

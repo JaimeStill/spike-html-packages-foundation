@@ -1,0 +1,45 @@
+/* from spike-html-design v0.7.0 (fe75220): layers/tokens/color/flexoki.css, unchanged below this line: the browser tier's reference */
+/*
+ * Colors from Flexoki (MIT, Steph Ango), https://stephango.com/flexoki: its light and dark values,
+ * the 600 hue steps in light and the 400 steps in dark. Green alone departs from them; its comment
+ * says how.
+ *
+ * layers/tokens/color/flexoki.css, the Flexoki profile of the color facet, the default: one
+ * zero-specificity block, applied by data-palette="flexoki" on any element to its subtree and on
+ * the root with no attribute anywhere, declaring the sixteen color tokens as light-dark() pairs,
+ * light / dark, and nothing else. The tokens' roles and how a profile is selected are the facet's,
+ * in layers/tokens/color.css. Each value's comment names its upstream swatch, light / dark, or the
+ * one name both share.
+ *
+ * Exported as ./profiles/flexoki. Both entries, baseline.css and full.css, import it into
+ * spike-html-design.tokens.color after the facet's own file. Pages link an entry, never this file:
+ * linked on its own, its rules would be unlayered.
+ */
+
+:where(:root, [data-palette="flexoki"]) {
+  /* Surfaces: the base, the first elevated surface, the element surface, the border and the
+     control boundary. */
+  --bg: light-dark(#fffcf0, #100f0f); /* paper / black */
+  --bg-1: light-dark(#f2f0e5, #1c1b1a); /* base-50 / base-950 */
+  --bg-2: light-dark(#e6e4d9, #282726); /* base-100 / base-900 */
+  --border: light-dark(#dad8ce, #343331); /* base-150 / base-850 */
+  --border-2: light-dark(#cecdc3, #403e3c); /* base-200 / base-800 */
+
+  /* Text, from the strongest down. */
+  --fg: light-dark(#100f0f, #e6e4d9); /* black / base-100 */
+  --fg-2: light-dark(#575653, #b7b5ac); /* base-700 / base-300 */
+  --fg-3: light-dark(#878580, #6f6e69); /* base-500 / base-600 */
+
+  /* Hues: one token per color, named for the color, never for a meaning. */
+  --red: light-dark(#af3029, #d14d41); /* red-600 / red-400 */
+  --orange: light-dark(#bc5215, #da702c); /* orange-600 / orange-400 */
+  --yellow: light-dark(#ad8301, #d0a215); /* yellow-600 / yellow-400 */
+  /* Green departs from Flexoki's green-600 / green-400, #66800b / #879a39, which sit at OKLCH hues
+     ~123° and ~119°, close to yellow: each keeps its lightness and chroma (L 0.559, C 0.134 light;
+     L 0.651, C 0.124 dark), rotated to hue 142°, sRGB green's. */
+  --green: light-dark(#408739, #61a25a); /* green-600 at hue 142° / green-400 at hue 142° */
+  --cyan: light-dark(#24837b, #3aa99f); /* cyan-600 / cyan-400 */
+  --blue: light-dark(#205ea6, #4385be); /* blue-600 / blue-400 */
+  --purple: light-dark(#5e409d, #8b7ec8); /* purple-600 / purple-400 */
+  --magenta: light-dark(#a02f6f, #ce5d97); /* magenta-600 / magenta-400 */
+}

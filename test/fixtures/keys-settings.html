@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- Adapted from spike-html-design v0.7.0 (fe75220): test/fixtures/keys-settings.html, on dist/. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>keys settings fixture</title>
+    <link rel="stylesheet" href="../../dist/page.css" />
+    <script type="module" src="../../dist/keys.js"></script>
+  </head>
+  <body>
+    <h1>keys settings fixture</h1>
+    <p>Each binding is pressed as written: T, ?, the chord g c, the combinations Alt+T and Control+K, and Escape. The off switch, in the reader's settings, turns off T, ?, and g c, character keys, while Alt+T, Control+K, and Escape stay on. Each button's aria-keyshortcuts follows its binding and the off switch.</p>
+    <p>
+      <button type="button" data-keys="t" data-log="t">Theme <kbd>T</kbd></button>
+      <button type="button" data-keys="?" data-log="?">Help <kbd>?</kbd></button>
+      <button type="button" data-keys="g c" data-log="g c">Contents <kbd>G</kbd> then <kbd>C</kbd></button>
+      <button type="button" data-keys="Alt+t" data-log="Alt+t">Tools <kbd>Alt</kbd>+<kbd>T</kbd></button>
+      <button type="button" data-keys="Control+k" data-log="Control+k">Command <kbd>Control</kbd>+<kbd>K</kbd></button>
+      <button type="button" data-keys="Escape" data-log="Escape">Dismiss <kbd>Escape</kbd></button>
+      <button type="button" id="unbound" aria-keyshortcuts="Alt+U">Unbound</button>
+    </p>
+    <script type="module">
+      // log records each action a binding runs, in order, for the tests and the reader.
+      window.log = [];
+      document.addEventListener("click", (event) => {
+        const name = event.target.closest?.("[data-log]")?.dataset.log;
+        if (name) window.log.push(name);
+      });
+    </script>
+  </body>
+</html>

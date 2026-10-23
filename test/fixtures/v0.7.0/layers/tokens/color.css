@@ -1,0 +1,66 @@
+/* from spike-html-design v0.7.0 (fe75220): layers/tokens/color.css, unchanged below this line: the browser tier's reference */
+/*
+ * layers/tokens/color.css, the color facet of the tokens layer: its contract, with no values.
+ *
+ * The color facet is sixteen tokens, each a light and a dark value paired through light-dark():
+ * five surfaces, three text steps, and eight hues named for their color. The surfaces, by role:
+ *
+ *   --bg        the base background: the page, and the fill of fields
+ *   --bg-1      the first elevated surface, as dialogs and panels: one step from --bg toward
+ *               the text
+ *   --bg-2      the element surface: one more step toward the text
+ *   --border    dividers, containers, and hover fills
+ *   --border-2  control boundaries: text fields, selects, buttons, dialogs, kbd
+ *
+ * --bg, --bg-1 and --bg-2 step toward the text, each a surface raised over the one before:
+ * lightest to darkest in a light scheme, darkest to lightest in a dark one. Every profile keeps
+ * that order.
+ *
+ * --fg, --fg-2 and --fg-3 are text, from the strongest down. There are no role tokens: a hue
+ * carries no meaning, so a page that wants an accent, a success, or a danger color reads the hue
+ * it means by name, or sets its own token in its own layer.
+ *
+ * A profile is one palette's values for the sixteen tokens, each in its own file under
+ * layers/tokens/color/, imported into this same sub-layer and applied by data-palette on any
+ * element to its subtree. Each profile is one block, :where([data-palette="<name>"]), with zero
+ * specificity, so the nearest scope wins by inheritance and a consumer's later layer beats every
+ * profile. Flexoki is the default: its block also matches :where(:root), so it applies with no
+ * attribute anywhere, and a data-palette on the root, matched by a later profile block of equal
+ * (zero) specificity, overrides it. This file declares no token: every value is a profile's.
+ *
+ * A data-scheme attribute of "light" or "dark" on any element forces that scheme for its subtree
+ * by setting color-scheme, which inherits. The tokens hold light-dark() unresolved: a custom
+ * property's value is resolved where a property reads it, against that element's color-scheme,
+ * so a forced container resolves every token to its scheme wherever the tokens were declared.
+ * With no attribute, the page follows the system scheme and changes when it does.
+ *
+ * Both entries import this file into spike-html-design.tokens.color, then the profiles into the
+ * same sub-layer: baseline.css, the lean entry, imports Flexoki's file,
+ * layers/tokens/color/flexoki.css; full.css, the full entry, imports Flexoki's and then every other
+ * profile's. Pages link an entry, never this file: linked on its own, its rules would be unlayered.
+ */
+
+/* The page follows the system scheme until something sets color-scheme otherwise; every color
+   token resolves through light-dark() against it. */
+:where(:root) {
+  color-scheme: light dark;
+}
+
+/* The data-scheme hook: each forces color-scheme on its element, and its subtree inherits it,
+   so every light-dark() token read there resolves to that scheme's value whatever the system
+   scheme. */
+:where([data-scheme="light"]) {
+  color-scheme: light;
+}
+
+:where([data-scheme="dark"]) {
+  color-scheme: dark;
+}
+
+/* A scope paints as the root does. Text color inherits as a resolved color, so a container that
+   names a palette or forces a scheme re-sets its own color and background from the tokens it now
+   resolves, and its subtree inherits those. */
+:where([data-palette], [data-scheme]) {
+  background-color: var(--bg);
+  color: var(--fg);
+}

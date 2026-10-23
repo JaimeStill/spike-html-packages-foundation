@@ -1,0 +1,28 @@
+/*
+ * The foundation's utilities sheet: scroll and table classes. Self-layered and importing nothing,
+ * so a shadow root adopts it alone.
+ * Adapted from spike-html-design v0.7.0 (fe75220): layers/tools.css.
+ */
+
+@layer foundation.utilities {
+  .scroll-y {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-inline-end: var(--space-2xs);
+  }
+
+  /* No gutter: scrollbar-gutter only reserves a vertical scrollbar's space. */
+  .scroll-x {
+    overflow-x: auto;
+    padding-block-end: var(--space-2xs);
+  }
+
+  .table-full {
+    inline-size: 100%;
+  }
+
+  /* --table-stripe is a public hook for the striped rows' surface. */
+  .table-striped > tbody > tr:nth-child(even) {
+    background-color: var(--table-stripe, color-mix(in srgb, var(--bg-2) 50%, var(--bg)));
+  }
+}

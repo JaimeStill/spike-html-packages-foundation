@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>foundation tools</title>
+    <!-- Every tool class of the foundation's three lateral-concern sheets, from dist/. The browser
+         tier (test/browser/tools.test.js) compares each element's computed style here against
+         spike-html-design v0.7.0's sheets, so every tool class sits on at least one element.
+         Adapted from spike-html-packages (7fb31a8): demo/tools.html, on dist/. -->
+    <link rel="stylesheet" href="../dist/page.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Foundation tools</h1>
+      <p>
+        The meta, structure, and utilities sheets over the baseline, on Flexoki, regular, and mono.
+      </p>
+
+      <section id="meta">
+        <h2>Meta: buttons</h2>
+        <p>
+          <code>.button</code> gives any element the native button's look: a link, a span, and a
+          native button, at rest and disabled.
+        </p>
+        <p>
+          <a class="button" href="#meta">A link</a>
+          <span class="button">A span</span>
+          <button class="button" type="button">A button</button>
+          <button class="button" type="button" disabled>Disabled</button>
+          <select class="button" disabled>
+            <option>A disabled select</option>
+          </select>
+        </p>
+        <p>The hue variants, one per hue, on a link, a native button, and a button-type input.</p>
+        <p>
+          <a class="button button-red" href="#meta">red</a>
+          <a class="button button-orange" href="#meta">orange</a>
+          <a class="button button-yellow" href="#meta">yellow</a>
+          <a class="button button-green" href="#meta">green</a>
+          <a class="button button-cyan" href="#meta">cyan</a>
+          <a class="button button-blue" href="#meta">blue</a>
+          <a class="button button-purple" href="#meta">purple</a>
+          <a class="button button-magenta" href="#meta">magenta</a>
+        </p>
+        <p>
+          <button class="button-red" type="button">A native button</button>
+          <input class="button-blue" type="submit" value="A submit input" />
+          <button class="button-green" type="button" disabled>A disabled variant</button>
+        </p>
+      </section>
+
+      <section id="structure">
+        <h2>Structure: field stacks</h2>
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" class="field-grow" type="text" value="Grows with its content" />
+          <small>A hint, at its own size.</small>
+        </div>
+        <label class="field">
+          A note
+          <textarea class="field-grow">A text area</textarea>
+        </label>
+      </section>
+
+      <section id="utilities">
+        <h2>Utilities: scroll and tables</h2>
+        <div class="scroll-y" style="block-size: 6rem">
+          <p>A vertical scroller, with a stable gutter.</p>
+          <p>Its content overflows its block size.</p>
+          <p>So it scrolls on the block axis.</p>
+          <p>And keeps its width whether or not it does.</p>
+          <p>The last line.</p>
+        </div>
+        <div class="scroll-x">
+          <table class="table-striped">
+            <caption>
+              A striped table in a horizontal scroller
+            </caption>
+            <thead>
+              <tr>
+                <th>Hue</th>
+                <th>Token</th>
+                <th>A deliberately long column heading that overflows a narrow container</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>red</td>
+                <td><code>--red</code></td>
+                <td>first</td>
+              </tr>
+              <tr>
+                <td>green</td>
+                <td><code>--green</code></td>
+                <td>second, striped</td>
+              </tr>
+              <tr>
+                <td>blue</td>
+                <td><code>--blue</code></td>
+                <td>third</td>
+              </tr>
+              <tr>
+                <td>purple</td>
+                <td><code>--purple</code></td>
+                <td>fourth, striped</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <table class="table-full">
+          <caption>
+            A full-width table
+          </caption>
+          <tbody>
+            <tr>
+              <td>It spans its container's inline size.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="combinations">
+        <h2>Combinations</h2>
+        <p>
+          Where two families set the same property on one element, the later family in v0.7.0's
+          tools layer wins, and the layer order keeps it: the scroll's padding over the button's,
+          and the field's grid over the button's inline-block.
+        </p>
+        <p>
+          <a class="button scroll-y" href="#combinations">A button that scrolls</a>
+          <span class="button scroll-x">A button that scrolls across</span>
+        </p>
+        <div class="button field">
+          <span>A button that stacks</span>
+          <span>its items</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

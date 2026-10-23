@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>foundation keys</title>
+    <!-- The keys family from dist/: bindings by data-keys and register(), and the help dialog,
+         filled by keys-help.js the first time it opens. Its modules run served only: mise run
+         demo.
+         Adapted from spike-html-packages (7fb31a8): demo/keys.html, on dist/. -->
+    <link rel="stylesheet" href="../dist/page.css" />
+    <script type="module" src="../dist/keys.js"></script>
+    <script type="module">
+      import { register } from "../dist/keys.js";
+
+      // say writes what a binding did into the log, newest first.
+      const say = (text) => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        document.getElementById("log").prepend(item);
+      };
+      document.addEventListener("click", (event) => {
+        const name = event.target.closest?.("[data-say]")?.dataset.say;
+        if (name) say(name);
+      });
+      // The pending presses of a sequence, from keys-sequence alone.
+      document.addEventListener("keys-sequence", ({ detail }) => {
+        document.getElementById("pending").textContent =
+          detail.state === "end" ? "" : detail.presses.join(" then ");
+      });
+      register("j", "Say j, a register() binding", () => say("j, from register()"));
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Foundation keys</h1>
+      <p>
+        Press <kbd>?</kbd>, or the Help button, for the help dialog: it lists every binding below,
+        runs each from its row, and holds the reader's settings, the off switch for character keys
+        and the wait between the presses of a sequence.
+      </p>
+      <p>
+        <button type="button" commandfor="help" command="show-modal" data-keys="?">
+          Help <kbd>?</kbd>
+        </button>
+        <button type="button" data-keys="t" data-say="Theme">Theme <kbd>T</kbd></button>
+        <button type="button" data-keys="g c" data-say="Contents">
+          Contents <kbd>G</kbd> then <kbd>C</kbd>
+        </button>
+        <button type="button" data-keys="g" data-say="Top">Top <kbd>G</kbd></button>
+        <button type="button" data-keys="Mod+k" data-say="Command">
+          Command <kbd>Mod</kbd>+<kbd>K</kbd>
+        </button>
+      </p>
+      <p>
+        <label>Search <kbd>/</kbd> <input type="search" data-keys="/" /></label>
+        <small>Escape leaves the field.</small>
+      </p>
+      <p>Pending: <output id="pending"></output></p>
+      <h2>Log</h2>
+      <ol id="log" reversed></ol>
+    </main>
+    <dialog id="help" aria-labelledby="help-title">
+      <h2 id="help-title">Keyboard shortcuts</h2>
+      <div data-keys-list>
+        <p>The shortcuts run when this page is served: mise run demo.</p>
+      </div>
+      <button type="button" commandfor="help" command="close" data-keys="?">
+        Close <kbd>?</kbd>
+      </button>
+    </dialog>
+  </body>
+</html>
