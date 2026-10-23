@@ -17,12 +17,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-      GIT_AUTHOR_NAME: github-actions[bot]
-      GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-      GIT_COMMITTER_NAME: github-actions[bot]
-      GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
     steps:
       - uses: actions/checkout@v7.0.1
 
@@ -54,14 +48,20 @@ jobs:
         if: steps.version.outputs.released == 'false'
         env:
           TAG: ${{ steps.version.outputs.tag }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           set -euo pipefail
           scratch=$(mktemp -d)
           pnpm pack --pack-destination "$scratch"
           tarball=$(ls "$scratch"/*.tgz)
           tar -xzf "$tarball" -C "$scratch"
-          # The pack's package/ as a tree, through an index of its own, so the checkout's index and
-          # .gitignore (which ignores dist/) play no part; the commit's one parent is the pushed one.
+          # The pack's package/ as a tree: it is the work tree, through an index of its own, so the
+          # checkout's index and .gitignore (which ignores dist/) play no part, and --force keeps
+          # an ignore rule outside it, such as .git/info/exclude, from dropping a file. The
+          # commit's one parent is the pushed one.
           export GIT_INDEX_FILE="$scratch/index"
           git --work-tree="$scratch/package" add --all --force .
           tree=$(git write-tree)
@@ -86,6 +86,7 @@ jobs:
       - name: Attach the tarball
         if: steps.version.outputs.released == 'false'
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.version.outputs.tag }}
           TARBALL: ${{ steps.tag.outputs.tarball }}
         run: gh release upload "$TAG" "$TARBALL"
